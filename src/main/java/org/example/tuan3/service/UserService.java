@@ -42,12 +42,11 @@ public class UserService {
             throw new DuplicateResourceException("Phone already exists");
         }
 
-        UserEntity user = UserEntity.builder()
-                .fullName(request.getFullName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .active(true)
-                .build();
+        UserEntity user = new UserEntity();
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setActive(true);
 
         return toResponse(userRepository.save(user));
     }
