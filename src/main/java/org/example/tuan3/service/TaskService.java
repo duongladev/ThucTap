@@ -10,6 +10,7 @@ import org.example.tuan3.entity.TaskEntity;
 import org.example.tuan3.entity.UserEntity;
 import org.example.tuan3.enums.TaskPriority;
 import org.example.tuan3.enums.TaskStatus;
+import org.example.tuan3.exception.BadRequestException;
 import org.example.tuan3.exception.ResourceNotFoundException;
 import org.example.tuan3.repository.ProjectRepository;
 import org.example.tuan3.repository.TaskRepository;
@@ -51,7 +52,7 @@ public class TaskService {
                         "Task not found with id: " + taskId));
 
         if (task.getStatus() == TaskStatus.DONE) {
-            throw new IllegalArgumentException("Task is DONE, cannot assign");
+            throw new BadRequestException("Task is DONE, cannot assign");
         }
 
         UserEntity user = userRepository.findById(request.getUserId())
@@ -59,13 +60,13 @@ public class TaskService {
                         "User not found with id: " + request.getUserId()));
 
         if (user.getActive() != null && !user.getActive()) {
-            throw new IllegalArgumentException("User is inactive, cannot assign task");
+            throw new BadRequestException("User is inactive, cannot assign task");
         }
 
         Integer projectId = task.getProject().getId();
         long memberCount = projectRepository.countMemberInProject(projectId, user.getId());
         if (memberCount == 0) {
-            throw new IllegalArgumentException("User does not belong to this project");
+            throw new BadRequestException("User does not belong to this project");
         }
 
         task.setAssignee(user);
@@ -114,7 +115,7 @@ public class TaskService {
 
     private void validateStatusTransition(TaskStatus currentStatus, TaskStatus newStatus) {
         if (currentStatus == TaskStatus.DONE) {
-            throw new IllegalArgumentException("Task is DONE, status cannot be changed");
+            throw new BadRequestException("Task is DONE, status cannot be changed");
         }
 
         if (currentStatus == newStatus) {
@@ -122,11 +123,11 @@ public class TaskService {
         }
 
         if (currentStatus == TaskStatus.TODO && newStatus != TaskStatus.IN_PROGRESS) {
-            throw new IllegalArgumentException("Task can only move from TODO to IN_PROGRESS");
+            throw new BadRequestException("Task can only move from TODO to IN_PROGRESS");
         }
 
         if (currentStatus == TaskStatus.IN_PROGRESS && newStatus != TaskStatus.DONE) {
-            throw new IllegalArgumentException("Task can only move from IN_PROGRESS to DONE");
+            throw new BadRequestException("Task can only move from IN_PROGRESS to DONE");
         }
     }
 
@@ -153,5 +154,7 @@ public class TaskService {
         response.setUpdatedAt(task.getUpdatedAt());
 
         return response;
+
     }
+
 }

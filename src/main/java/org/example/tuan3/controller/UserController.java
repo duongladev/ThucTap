@@ -1,12 +1,16 @@
 package org.example.tuan3.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.example.tuan3.dto.request.CreateUserRequest;
 import org.example.tuan3.dto.request.UpdateUserRequest;
+import org.example.tuan3.dto.response.ApiResponse;
 import org.example.tuan3.dto.response.UserResponse;
 import org.example.tuan3.service.UserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,35 +18,41 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Validated
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping
-    public List<UserResponse> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "Get all users successfully", userService.getAllUsers())
+        );
     }
 
     @GetMapping("/{id}")
-    public UserResponse getUserById(@PathVariable Integer id) {
-        return userService.getUserById(id);
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(
+            @PathVariable @Positive(message = "id must be greater than 0") Integer id
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "Get user successfully", userService.getUserById(id))
+        );
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
-        return userService.createUser(request);
+    public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody CreateUserRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.success(201, "User created successfully", userService.createUser(request))
+        );
     }
 
     @PutMapping("/{id}")
-    public UserResponse updateUser(@PathVariable Integer id,
-                                   @Valid @RequestBody UpdateUserRequest request) {
-        return userService.updateUser(id, request);
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable Integer id) {
-        userService.deleteUser(id);
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
+            @PathVariable @Positive(message = "id must be greater than 0") Integer id,
+            @Valid @RequestBody UpdateUserRequest request
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "User updated successfully", userService.updateUser(id, request))
+        );
     }
 }

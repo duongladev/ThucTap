@@ -1,56 +1,102 @@
 package org.example.tuan3.exception;
 
+import org.example.tuan3.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex
+    ) {
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage()));
+
+        ex.getBindingResult().getGlobalErrors().forEach(error ->
+                errors.put(error.getObjectName(), error.getDefaultMessage()));
+
+        return ResponseEntity.badRequest().body(
+                ApiResponse.error(400, "Validation failed", errors)
+        );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleConstraintViolation(
+            ConstraintViolationException ex
+    ) {
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            errors.put(violation.getPropertyPath().toString(), violation.getMessage());
+        }
+
+        return ResponseEntity.badRequest().body(
+                ApiResponse.error(400, "Constraint violation", errors)
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Object>> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex
+    ) {
+        String message = "Invalid value for parameter: " + ex.getName();
+
+        return ResponseEntity.badRequest().body(
+                ApiResponse.error(400, message, null)
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Object>> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex
+    ) {
+        return ResponseEntity.badRequest().body(
+                ApiResponse.error(400, "Malformed JSON request or invalid enum value", null)
+        );
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity.badRequest().body(
+                ApiResponse.error(400, ex.getMessage(), null)
+        );
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<?> handleNotFound(ResourceNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    public ResponseEntity<ApiResponse<Object>> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ApiResponse.error(404, ex.getMessage(), null)
+        );
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<?> handleDuplicate(DuplicateResourceException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Validation Failed");
-
-        Map<String, String> fieldErrors = new HashMap<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            fieldErrors.put(error.getField(), error.getDefaultMessage());
-        }
-
-        body.put("details", fieldErrors);
-        return ResponseEntity.badRequest().body(body);
+    public ResponseEntity<ApiResponse<Object>> handleDuplicate(DuplicateResourceException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ApiResponse.error(409, ex.getMessage(), null)
+        );
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleOther(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
-    }
+    public ResponseEntity<ApiResponse<Object>> handleGeneric(Exception ex) {
+        ex.printStackTrace();
 
-    private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", status.value());
-        body.put("error", status.getReasonPhrase());
-        body.put("message", message);
-        return ResponseEntity.status(status).body(body);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ApiResponse.error(500, "Internal server error", null)
+        );
     }
 }

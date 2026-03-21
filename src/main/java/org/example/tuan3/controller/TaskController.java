@@ -1,14 +1,17 @@
 package org.example.tuan3.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.example.tuan3.dto.request.AssignTaskRequest;
 import org.example.tuan3.dto.request.CreateTaskRequest;
 import org.example.tuan3.dto.request.UpdateTaskStatusRequest;
+import org.example.tuan3.dto.response.ApiResponse;
 import org.example.tuan3.dto.response.TaskResponse;
 import org.example.tuan3.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,34 +19,49 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/tasks")
 @RequiredArgsConstructor
+@Validated
 public class TaskController {
 
     private final TaskService taskService;
 
     @PostMapping
-    public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody CreateTaskRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(request));
+    public ResponseEntity<ApiResponse<TaskResponse>> createTask(@Valid @RequestBody CreateTaskRequest request) {
+        TaskResponse response = taskService.createTask(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(201, "Task created successfully", response));
     }
 
     @PutMapping("/{taskId}/assign")
-    public ResponseEntity<TaskResponse> assignTask(@PathVariable Integer taskId,
-                                                   @Valid @RequestBody AssignTaskRequest request) {
-        return ResponseEntity.ok(taskService.assignTask(taskId, request));
+    public ResponseEntity<ApiResponse<TaskResponse>> assignTask(
+            @PathVariable @Positive(message = "taskId must be greater than 0") Integer taskId,
+            @Valid @RequestBody AssignTaskRequest request
+    ) {
+        TaskResponse response = taskService.assignTask(taskId, request);
+        return ResponseEntity.ok(ApiResponse.success(200, "Task assigned successfully", response));
     }
 
     @PatchMapping("/{taskId}/status")
-    public ResponseEntity<TaskResponse> updateStatus(@PathVariable Integer taskId,
-                                                     @Valid @RequestBody UpdateTaskStatusRequest request) {
-        return ResponseEntity.ok(taskService.updateStatus(taskId, request));
+    public ResponseEntity<ApiResponse<TaskResponse>> updateStatus(
+            @PathVariable @Positive(message = "taskId must be greater than 0") Integer taskId,
+            @Valid @RequestBody UpdateTaskStatusRequest request
+    ) {
+        TaskResponse response = taskService.updateStatus(taskId, request);
+        return ResponseEntity.ok(ApiResponse.success(200, "Task status updated successfully", response));
     }
 
     @GetMapping("/project/{projectId}")
-    public ResponseEntity<List<TaskResponse>> getTasksByProject(@PathVariable Integer projectId) {
-        return ResponseEntity.ok(taskService.getTasksByProject(projectId));
+    public ResponseEntity<ApiResponse<List<TaskResponse>>> getTasksByProject(
+            @PathVariable @Positive(message = "projectId must be greater than 0") Integer projectId
+    ) {
+        List<TaskResponse> response = taskService.getTasksByProject(projectId);
+        return ResponseEntity.ok(ApiResponse.success(200, "Get tasks by project successfully", response));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<TaskResponse>> getTasksByUser(@PathVariable Integer userId) {
-        return ResponseEntity.ok(taskService.getTasksByUser(userId));
+    public ResponseEntity<ApiResponse<List<TaskResponse>>> getTasksByUser(
+            @PathVariable @Positive(message = "userId must be greater than 0") Integer userId
+    ) {
+        List<TaskResponse> response = taskService.getTasksByUser(userId);
+        return ResponseEntity.ok(ApiResponse.success(200, "Get tasks by user successfully", response));
     }
 }
