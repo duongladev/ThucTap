@@ -1,20 +1,17 @@
 package org.example.tuan3.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import tools.jackson.databind.deser.bean.CreatorCandidate;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class UserEntity {
 
     @Id
@@ -30,10 +27,20 @@ public class UserEntity {
     @Column(name = "phone", nullable = false, unique = true, length = 20)
     private String phone;
 
+    @Column(name = "password", length = 255)
+    private String password;
+
     @Column(name = "active", nullable = false)
-    private Boolean active;
+    private Boolean active = true;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<RoleEntity> roles = new HashSet<>();
 }

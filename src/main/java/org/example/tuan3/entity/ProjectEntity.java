@@ -1,9 +1,7 @@
 package org.example.tuan3.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.tuan3.enums.ProjectStatus;
 
@@ -13,8 +11,6 @@ import java.time.LocalDateTime;
 @Table(name = "projects")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class ProjectEntity {
 
     @Id
@@ -40,18 +36,4 @@ public class ProjectEntity {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        if (this.status == null) {
-            this.status = ProjectStatus.PLANNING;
-        }
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }

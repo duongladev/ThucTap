@@ -16,6 +16,9 @@ import org.example.tuan3.repository.ProjectRepository;
 import org.example.tuan3.repository.TaskRepository;
 import org.example.tuan3.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.example.tuan3.security.CustomUserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -157,4 +160,13 @@ public class TaskService {
 
     }
 
+    public List<TaskResponse> getMyTasks() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+
+        return taskRepository.findByAssignee_Id(principal.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 }
