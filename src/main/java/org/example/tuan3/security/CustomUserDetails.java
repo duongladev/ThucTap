@@ -38,6 +38,10 @@ public class CustomUserDetails implements UserDetails {
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
                 .toList();
 
+        System.out.println("EMAIL: " + user.getEmail());
+        System.out.println("ROLES: " + user.getRoles().stream().map(r -> r.getName().name()).toList());
+        System.out.println("AUTHORITIES: " + authorities);
+
         return new CustomUserDetails(
                 user.getId(),
                 user.getEmail(),

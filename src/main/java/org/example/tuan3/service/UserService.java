@@ -11,6 +11,7 @@ import org.example.tuan3.exception.ResourceNotFoundException;
 import org.example.tuan3.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -47,6 +48,7 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setActive(true);
+        user.setCreatedAt(LocalDateTime.now());
 
         return toResponse(userRepository.save(user));
     }
@@ -95,12 +97,9 @@ public class UserService {
 
     private UserResponse toResponse(UserEntity user) {
         return UserResponse.builder()
-                .id(user.getId())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
-                .active(user.getActive())
-                .createdAt(user.getCreatedAt())
                 .build();
     }
 }
