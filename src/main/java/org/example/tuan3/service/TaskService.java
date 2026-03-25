@@ -15,10 +15,11 @@ import org.example.tuan3.exception.ResourceNotFoundException;
 import org.example.tuan3.repository.ProjectRepository;
 import org.example.tuan3.repository.TaskRepository;
 import org.example.tuan3.repository.UserRepository;
-import org.springframework.stereotype.Service;
 import org.example.tuan3.security.CustomUserDetails;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -116,6 +117,25 @@ public class TaskService {
                 .toList();
     }
 
+    public List<TaskResponse> getMyTasks() {
+        CustomUserDetails currentUser = getCurrentUser();
+
+        return taskRepository.findByAssignee_Id(currentUser.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private CustomUserDetails getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails principal)) {
+            throw new InsufficientAuthenticationException("User is not authenticated");
+        }
+
+        return principal;
+    }
+
     private void validateStatusTransition(TaskStatus currentStatus, TaskStatus newStatus) {
         if (currentStatus == TaskStatus.DONE) {
             throw new BadRequestException("Task is DONE, status cannot be changed");
@@ -157,16 +177,5 @@ public class TaskService {
         response.setUpdatedAt(task.getUpdatedAt());
 
         return response;
-
-    }
-
-    public List<TaskResponse> getMyTasks() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-
-        return taskRepository.findByAssignee_Id(principal.getId())
-                .stream()
-                .map(this::toResponse)
-                .toList();
     }
 }

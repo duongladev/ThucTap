@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=UserServiceDB;encrypt=true;trustServerCertificate=true;
+    username: sa
+    password: Duong03112007
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+server:
+  port: 8080
