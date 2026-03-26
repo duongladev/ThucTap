@@ -196,26 +196,3 @@ src/main/java/org/example/tuan3
 
 ---
 
-## ⭐ Support
-
-Nếu bạn thấy project hữu ích:
-
-👉 Hãy ⭐ repo để ủng hộ nhé!
-
----
-
-## 💡 Tip nâng cấp README
-
-Bạn có thể thêm:
-
-* 📷 Ảnh Postman test API
-* 🎥 Video demo
-* 🔗 Deploy link (nếu có)
-
----
-
-🔥 README này đủ để:
-
-* Nộp bài ✔
-* Đưa CV ✔
-* Show GitHub ✔
