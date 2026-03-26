@@ -34,16 +34,6 @@ public class TaskController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @PutMapping("/{taskId}/assign")
-    public ResponseEntity<ApiResponse<TaskResponse>> assignTask(
-            @PathVariable @Positive(message = "taskId must be greater than 0") Integer taskId,
-            @Valid @RequestBody AssignTaskRequest request
-    ) {
-        TaskResponse response = taskService.assignTask(taskId, request);
-        return ResponseEntity.ok(ApiResponse.success(200, "Task assigned successfully", response));
-    }
-
-    @PreAuthorize("hasRole('USER')")
     @PatchMapping("/{taskId}/status")
     public ResponseEntity<ApiResponse<TaskResponse>> updateStatus(
             @PathVariable @Positive(message = "taskId must be greater than 0") Integer taskId,

@@ -49,14 +49,5 @@ public class ProjectController {
                 ApiResponse.success(201, "Project created successfully", projectService.createProject(request))
         );
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProjectResponse>> updateProject(
-            @PathVariable @Positive(message = "id must be greater than 0") Integer id,
-            @Valid @RequestBody UpdateProjectRequest request
-    ) {
-        return ResponseEntity.ok(
-                ApiResponse.success(200, "Project updated successfully", projectService.updateProject(id, request))
-        );
-    }
+    
 }
